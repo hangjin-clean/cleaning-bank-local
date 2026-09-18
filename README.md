@@ -6,4 +6,4 @@
 - 11개 서비스 등록
 - v1은 메인 + 관리자 미리보기 + robots/sitemap 기본 구조
 - 실제 공개 자동발행은 4호 전용 Netlify 사이트 연결 후 추가
-- robots.txt의 YOUR-4TH-SITE-DOMAIN은 배포 주소 확정 후 교체
+- robots.txt의 cleaning-bank-service.netlify.app은 배포 주소 확정 후 교체

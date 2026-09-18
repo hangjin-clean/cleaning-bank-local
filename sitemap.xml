@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://YOUR-4TH-DOMAIN/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-office-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-office-regular-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-%EC%97%AD%EC%82%BC%EB%8F%99-office-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-%EC%8B%A0%EC%82%AC%EB%8F%99-hospital-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EA%B2%BD%EA%B8%B0-%EC%95%88%EC%96%91%EC%8B%9C-office-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EA%B2%BD%EA%B8%B0-%EC%95%88%EC%96%91%EC%8B%9C-%EA%B4%80%EC%96%91%EB%8F%99-office-regular-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EC%9D%B8%EC%B2%9C-%EC%97%B0%EC%88%98%EA%B5%AC-%EC%86%A1%EB%8F%84%EB%8F%99-office-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EB%B6%80%EC%82%B0-%EA%B0%95%EC%84%9C%EA%B5%AC-%EB%AA%85%EC%A7%80%EB%8F%99-office-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EB%8C%80%EA%B5%AC-%EC%88%98%EC%84%B1%EA%B5%AC-hospital-cleaning/</loc></url>
-  <url><loc>https://YOUR-4TH-DOMAIN/local/%EB%8C%80%EC%A0%84-%EC%84%9C%EA%B5%AC-%EB%91%94%EC%82%B0%EB%8F%99-academy-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-office-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-office-regular-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-%EC%97%AD%EC%82%BC%EB%8F%99-office-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EC%84%9C%EC%9A%B8-%EA%B0%95%EB%82%A8%EA%B5%AC-%EC%8B%A0%EC%82%AC%EB%8F%99-hospital-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EA%B2%BD%EA%B8%B0-%EC%95%88%EC%96%91%EC%8B%9C-office-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EA%B2%BD%EA%B8%B0-%EC%95%88%EC%96%91%EC%8B%9C-%EA%B4%80%EC%96%91%EB%8F%99-office-regular-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EC%9D%B8%EC%B2%9C-%EC%97%B0%EC%88%98%EA%B5%AC-%EC%86%A1%EB%8F%84%EB%8F%99-office-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EB%B6%80%EC%82%B0-%EA%B0%95%EC%84%9C%EA%B5%AC-%EB%AA%85%EC%A7%80%EB%8F%99-office-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EB%8C%80%EA%B5%AC-%EC%88%98%EC%84%B1%EA%B5%AC-hospital-cleaning/</loc></url>
+  <url><loc>https://cleaning-bank-service.netlify.app/local/%EB%8C%80%EC%A0%84-%EC%84%9C%EA%B5%AC-%EB%91%94%EC%82%B0%EB%8F%99-academy-cleaning/</loc></url>
 </urlset>
