@@ -8,3 +8,17 @@
 .certificate-image img{display:block;width:100%;height:auto}
 .floating-phone{position:fixed;right:24px;bottom:24px;z-index:1000;background:#168e70;color:#fff;padding:15px 22px;border-radius:999px;font-weight:900;font-size:18px;box-shadow:0 8px 28px rgba(0,0,0,.18)}
 @media(max-width:760px){.certificate-grid{grid-template-columns:1fr}.certificate-copy h2{font-size:28px}.floating-phone{right:14px;bottom:14px;font-size:16px;padding:13px 18px}}
+
+/* Regional service page v2 */
+.region-top-phone{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#168e70;border:2px solid #168e70;border-radius:12px;padding:10px 16px;font-size:20px;font-weight:900}
+.region-wrap{max-width:1080px;margin:auto;padding:0 24px}
+.region-gallery{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0}
+.region-gallery img{width:100%;height:180px;object-fit:cover;border-radius:12px}
+.region-cert{margin:50px 0;background:#f3f8f6;border-radius:18px;padding:30px;display:grid;grid-template-columns:1fr 1.25fr;gap:35px;align-items:center}
+.region-cert img{width:100%;background:#fff;border-radius:12px}
+.region-trust{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:35px 0}
+.region-trust div{border:1px solid #dfe7e4;border-radius:12px;padding:20px;background:#fff}
+.region-bottom-call{margin:55px 0 20px;background:#eaf7f3;border-radius:18px;padding:30px;text-align:center}
+.region-bottom-call a{display:inline-flex;margin-top:15px;background:#168e70;color:#fff;padding:16px 28px;border-radius:999px;font-size:24px;font-weight:900}
+.region-phone-float{position:fixed;right:22px;bottom:22px;z-index:999;background:#168e70;color:#fff;padding:14px 20px;border-radius:999px;font-size:18px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+@media(max-width:760px){.region-gallery{grid-template-columns:1fr 1fr}.region-cert{grid-template-columns:1fr}.region-trust{grid-template-columns:1fr}.region-top-phone{font-size:16px}.region-bottom-call a{font-size:20px}.region-phone-float{right:12px;bottom:12px;font-size:16px}}
