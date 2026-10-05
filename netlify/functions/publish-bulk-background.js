@@ -4,20 +4,36 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 function hash(s){let x=2166136261;for(const c of String(s)){x^=c.charCodeAt(0);x=Math.imul(x,16777619)}return x|0}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
+function serviceTemplate(service){
+ const s=String(service||"");
+ if(/병원|의원/.test(s)) return {img:"/assets/images/store.jpg",scope:["진료실·대기실","접수대·공용공간","화장실·바닥"],intro:"병원과 개인의원은 환자와 의료진의 이동이 많아 진료 전후의 청결 관리와 마감 관리가 중요합니다.",detail:"오픈 전 청소, 마감청소, 정기관리 횟수와 진료시간을 확인해 동선을 방해하지 않는 시간대로 상담합니다."};
+ if(/학원|스터디|교습소|어린이집|학교/.test(s)) return {img:"/assets/images/office-meeting.jpg",scope:["교실·책상","칠판·공용공간","복도·화장실"],intro:"학원과 교육시설은 책상, 교실, 복도처럼 반복 사용되는 공간의 먼지와 생활오염을 일정하게 관리하는 것이 중요합니다.",detail:"수업 전후 시간과 학생 이용량을 고려해 교실, 책상정리, 칠판, 공용공간과 화장실 범위를 상담합니다."};
+ if(/계단/.test(s)) return {img:"/assets/images/office-corridor.jpg",scope:["공용계단","난간·출입구","복도·화장실"],intro:"빌라, 상가, 원룸, 오피스텔의 공용계단은 외부 먼지와 발자국 오염이 반복되어 정기적인 관리가 효과적입니다.",detail:"건물 층수와 엘리베이터 유무, 공용화장실 포함 여부, 월 관리 횟수를 확인해 범위를 정합니다."};
+ if(/식당|음식점|주방|후드/.test(s)) return {img:"/assets/images/store.jpg",scope:["홀·바닥","주방 주변","후드·기름때"],intro:"식당과 음식점은 홀 바닥뿐 아니라 주방 주변과 후드의 기름 오염, 영업 마감 후 관리가 중요합니다.",detail:"영업시간과 마감시간, 주방·홀·후드 등 필요한 범위를 나눠 정기관리 또는 별도 작업으로 상담합니다."};
+ if(/카페|베이커리|무인매장/.test(s)) return {img:"/assets/images/store.jpg",scope:["매장·바닥","테이블·공용공간","화장실·마감"],intro:"카페와 베이커리, 무인매장은 고객 이용이 잦아 바닥과 테이블 주변, 출입구의 반복 관리가 중요합니다.",detail:"오픈 전 또는 마감 후 작업시간과 매장 규모를 확인해 필요한 관리주기를 상담합니다."};
+ if(/준공|입주|이사|거주/.test(s)) return {img:"/assets/images/floor.jpg",scope:["바닥·분진","창틀·유리","주방·화장실"],intro:"준공·입주·이사 청소는 공사 분진과 생활오염 등 현장 상태에 따라 작업범위가 크게 달라집니다.",detail:"평수와 공사·입주 상태, 창틀·유리·주방·욕실 등 세부 범위를 확인한 뒤 방문견적을 안내합니다."};
+ if(/유리|외벽|간판/.test(s)) return {img:"/assets/images/hero.jpg",scope:["유리·창틀","외벽 표면","간판·외부오염"],intro:"유리창, 외벽, 간판은 높이와 오염상태, 장비 사용 여부에 따라 작업방법이 달라지는 외부 청소 영역입니다.",detail:"건물 높이와 작업면적, 접근환경을 확인해 안전한 작업방식과 필요한 장비를 상담합니다."};
+ if(/헬스장|샤워실|탈의실/.test(s)) return {img:"/assets/images/restroom.jpg",scope:["운동공간·기구주변","샤워실","탈의실·화장실"],intro:"헬스장은 운동공간뿐 아니라 샤워실과 탈의실처럼 이용량과 습도가 높은 공간을 함께 관리해야 합니다.",detail:"운영시간과 회원 이용량을 고려해 기구 주변 먼지, 바닥, 샤워실, 탈의실과 화장실 범위를 상담합니다."};
+ if(/공장|창고/.test(s)) return {img:"/assets/images/floor.jpg",scope:["작업장 바닥","통로·출입구","창고·분진"],intro:"공장과 창고는 면적, 적재상태, 분진과 바닥오염 정도에 따라 일반 사업장과 다른 작업계획이 필요합니다.",detail:"작업장 동선과 가동시간, 바닥상태와 장비 사용 가능 여부를 확인해 작업범위를 정합니다."};
+ if(/주차장/.test(s)) return {img:"/assets/images/floor.jpg",scope:["주차면","차량 통로","출입구·분진"],intro:"주차장은 차량 이동으로 먼지와 타이어 오염이 반복되므로 면적과 바닥상태에 맞는 관리가 필요합니다.",detail:"주차면수, 작업 가능시간, 배수와 장비 사용환경을 확인해 세척 또는 정기관리 범위를 상담합니다."};
+ if(/화장실|방역|소독/.test(s)) return {img:"/assets/images/restroom.jpg",scope:["바닥·벽면","변기·세면대","유리·접촉부"],intro:"화장실과 위생관리 영역은 이용량에 따라 오염이 빠르게 반복되어 정기적인 점검과 관리가 중요합니다.",detail:"바닥, 벽면, 유리, 변기와 세면대 등 필요한 범위를 확인하고 현장 운영시간에 맞춰 상담합니다."};
+ return {img:"/assets/images/office-hero.jpg",scope:["사무공간·바닥","출입구·공용공간","탕비실·화장실"],intro:"사무실과 일반 사업장은 직원과 방문객 이용으로 바닥과 공용공간에 먼지와 생활오염이 반복적으로 쌓입니다.",detail:"사무실 규모와 운영시간을 확인해 청소기·물걸레, 공용공간, 탕비실과 화장실 등 필요한 범위를 상담합니다."};
+}
 function pageHtml(p,site){
- const t=esc(p.title),r=esc(p.region),s=esc(p.service),c=site+p.urlPath;
+ const t=esc(p.title),r=esc(p.region),s=esc(p.service),c=site+p.urlPath,x=serviceTemplate(p.service);
  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${t} | 청소뱅크</title><meta name="description" content="${r} ${s} 청소업체 상담. 무료 방문견적, 카드결제, 세금계산서, 영업배상책임보험 1억원.">
 <meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="${c}"><link rel="stylesheet" href="/assets/style.css">
-<style>.x{max-width:980px;margin:46px auto;padding:0 24px;color:#17212b;line-height:1.8}.hero{width:100%;max-height:520px;object-fit:cover;border-radius:18px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{border:1px solid #d9e0df;border-radius:14px;padding:20px}.info,.cta{padding:26px;border-radius:18px;margin:30px 0;background:#edf9f5}.btn{display:inline-block;padding:14px 22px;border-radius:28px;text-decoration:none;font-weight:800;margin:4px}.call{background:#168e70;color:#fff}.home{background:#fff;color:#168e70;border:2px solid #168e70}@media(max-width:720px){.grid{grid-template-columns:1fr}}</style></head><body>
-<div class="top">무료견적서비스 010-6856-0158 · 상담 08:00~20:00</div><main class="x"><img class="hero" src="/assets/images/office-hero.jpg" alt="${r} ${s} 청소 현장"><p>청소뱅크 › 지역별 서비스 › ${r} ${s}</p><h1>${t}</h1>
-<p>${r}에서 ${s} 업체를 찾을 때는 작업범위와 방문주기, 운영시간을 함께 확인하는 것이 좋습니다. 청소뱅크는 현장 규모와 이용환경을 확인한 뒤 필요한 범위를 상담하고 무료 방문견적을 안내합니다.</p>
-<h2>${r} ${s} 관리범위</h2><div class="grid"><div class="card"><b>바닥·공용공간</b><br>현장 상태에 맞는 기본 관리</div><div class="card"><b>화장실·출입구</b><br>이용량이 많은 공간 관리</div><div class="card"><b>정기관리</b><br>주 1회~주 7회 상담</div></div>
-<div class="info"><b>청소뱅크 안내</b><br>무료 방문견적 · 카드결제 · 세금계산서 · 영업배상책임보험 1억원 · 하청 없이 직접 관리 상담</div>
-<h2>${r} ${s} 업체 상담</h2><p>정확한 비용은 면적, 오염도, 작업시간, 관리주기와 세부 범위를 확인한 뒤 안내합니다.</p>
-<div class="cta"><h2>청소 상담이 필요하신가요?</h2><a class="btn call" href="tel:01068560158">☎ 010-6856-0158</a><a class="btn home" href="https://cleaning-bank.imweb.me/" target="_blank" rel="noopener">청소뱅크 홈페이지</a></div></main></body></html>`;
+<style>.x{max-width:980px;margin:46px auto 70px;padding:0 24px;color:#17212b;line-height:1.8}.hero{width:100%;max-height:520px;object-fit:cover;border-radius:18px}.crumb{margin:32px 0 10px;color:#667085}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.card{border:1px solid #d9e0df;border-radius:14px;padding:20px;background:#fff}.info{padding:24px;border-radius:16px;margin:28px 0;background:#f0f8f5}.cta{padding:34px 24px;border-radius:18px;margin:36px 0;background:#edf9f5;text-align:center}.btn{display:inline-block;padding:14px 22px;border-radius:28px;text-decoration:none;font-weight:800;margin:4px}.call{background:#168e70;color:#fff}.home{background:#fff;color:#168e70;border:2px solid #168e70}.cert{width:100%;max-width:760px;margin:25px auto;display:block;border-radius:12px}@media(max-width:720px){.grid{grid-template-columns:1fr}.x h1{font-size:30px}}</style></head><body>
+<div class="top">무료견적서비스 010-6856-0158 · 상담 08:00~20:00</div><main class="x">
+<img class="hero" src="${x.img}" alt="${r} ${s} 청소 현장"><div class="crumb">청소뱅크 › 지역별 서비스 › ${r} ${s}</div><h1>${t}</h1>
+<p>${x.intro} 청소뱅크는 ${r} 현장의 규모와 운영환경을 확인한 뒤 ${s}에 필요한 범위와 관리주기를 상담합니다.</p>
+<h2>${r} ${s} 관리범위</h2><div class="grid">${x.scope.map(v=>`<div class="card"><b>${v}</b><br>현장 상태와 이용량에 맞춰 필요한 작업범위를 확인합니다.</div>`).join("")}</div>
+<p>${x.detail}</p><div class="info"><b>청소뱅크 정기관리 안내</b><br>무료 방문견적 · 주 1회~주 7회 상담 · 카드결제 · 세금계산서 발행 · 영업배상책임보험 1억원 · 하청 없이 직접 관리 상담</div>
+<h2>${r} ${s} 업체를 비교할 때 확인할 점</h2><p>가격만 비교하기보다 실제 작업범위, 방문 횟수, 작업시간, 결제방법과 사후관리 조건을 함께 확인하는 것이 좋습니다. 정확한 비용은 현장 조건을 확인한 뒤 안내합니다.</p>
+<img class="cert" src="/assets/images/cleaning-certificates-3.png" alt="청소뱅크 청소 관련 자격 및 인증 안내">
+<div class="cta"><h2>청소 상담이 필요하신가요?</h2><p>${r} ${s} 무료 방문견적과 관리주기를 상담하세요.</p><a class="btn call" href="tel:01068560158">☎ 010-6856-0158</a><a class="btn home" href="https://cleaning-bank.imweb.me/" target="_blank" rel="noopener">청소뱅크 홈페이지</a></div></main></body></html>`;
 }
-
 async function gh(url,opt,headers,attempt=0){
  const r=await fetch(url,{...opt,headers:opt.headers||headers});
  const tx=await r.text(); let d={}; try{d=JSON.parse(tx)}catch{d={message:tx}}
