@@ -1,1 +1,5 @@
-4호 실제 발행 v3: admin.html, assets/admin.js, netlify/functions/generate-bulk.js, netlify/functions/publish-bulk-background.js를 업로드. 기존 local 페이지는 삭제하지 않음. 먼저 10개 테스트 발행 권장.
+청소뱅크 4호 v4 상태관리 패치
+추가: publish-status.js
+관리화면에서 최근 완료 구간과 다음 시작번호를 GitHub 커밋 기준으로 자동 복구합니다.
+현재 1~10 테스트가 완료됐다면 다음 시작번호 11로 표시됩니다.
+기존 local 페이지는 삭제하지 않습니다.
