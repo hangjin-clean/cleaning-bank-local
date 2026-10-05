@@ -1,0 +1,1 @@
+4호 실제 발행 v3: admin.html, assets/admin.js, netlify/functions/generate-bulk.js, netlify/functions/publish-bulk-background.js를 업로드. 기존 local 페이지는 삭제하지 않음. 먼저 10개 테스트 발행 권장.
