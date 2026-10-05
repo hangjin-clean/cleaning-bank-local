@@ -1,8 +1,43 @@
-const services=[{"slug": "office-cleaning", "name": "사무실청소"}, {"slug": "hospital-cleaning", "name": "병원청소"}, {"slug": "academy-cleaning", "name": "학원청소"}, {"slug": "stair-cleaning", "name": "계단청소"}, {"slug": "office-regular-cleaning", "name": "사무실정기청소"}, {"slug": "hospital-regular-cleaning", "name": "병원정기청소"}, {"slug": "academy-regular-cleaning", "name": "학원정기청소"}, {"slug": "office-movein-cleaning", "name": "사무실입주청소"}, {"slug": "hospital-movein-cleaning", "name": "병원입주청소"}, {"slug": "academy-movein-cleaning", "name": "학원입주청소"}, {"slug": "villa-stair-cleaning", "name": "빌라계단청소"}];
-const sel=document.getElementById('service'); services.forEach(s=>{let o=document.createElement('option');o.value=s.slug;o.textContent=s.name;sel.appendChild(o)});
-function preview(){
- const r=document.getElementById('region').value.trim(), s=services.find(x=>x.slug===sel.value);
- if(!r) return alert('지역명을 입력하세요.');
- const slug=encodeURIComponent(r.replace(/\s+/g,'-'));
- document.getElementById('out').innerHTML=`<div class="card"><h2>${r} ${s.name}</h2><p>예상 URL: /local/${slug}/${s.slug}/</p><p>발행 전 페이지별 제목·본문·사진·메타설명을 독립적으로 구성합니다.</p></div>`;
+const $ = id => document.getElementById(id);
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;"
+  }[c]));
 }
+
+async function call(start = 1, limit = 20) {
+  $("out").innerHTML = "<p>전국 지역과 키워드를 계산 중입니다...</p>";
+
+  const r = await fetch(
+    `/.netlify/functions/generate-bulk?start=${start}&limit=${limit}`,
+    { cache: "no-store" }
+  );
+  const d = await r.json();
+  if (!d.ok) throw new Error(d.error || "오류");
+
+  $("summary").innerHTML =
+    `<b>총 키워드: ${d.total.toLocaleString()}개</b>` +
+    ` · 지역기록 ${d.areaRecords.toLocaleString()}개` +
+    ` · 서비스 검색어 ${d.services}종`;
+
+  $("out").innerHTML =
+    `<div class="card">` +
+    `<b>${d.start.toLocaleString()} ~ ${d.end.toLocaleString()}</b>` +
+    `<ol>${d.items.slice(0,100).map(x => `<li>${esc(x.title)}</li>`).join("")}</ol>` +
+    (d.items.length > 100
+      ? `<p>※ 화면은 앞 100개만 표시합니다. 선택 구간은 ${d.returned.toLocaleString()}개입니다.</p>`
+      : "") +
+    `</div>`;
+
+  return d;
+}
+
+$("countBtn").onclick = () =>
+  call(1, 20).catch(e => alert(e.message));
+
+$("rangeBtn").onclick = () =>
+  call(
+    Number($("start").value || 1),
+    Number($("limit").value || 8000)
+  ).catch(e => alert(e.message));
