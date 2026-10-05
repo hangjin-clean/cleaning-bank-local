@@ -1,5 +1,23 @@
-const $=id=>document.getElementById(id);function log(s){$("log").textContent+="\n["+new Date().toLocaleTimeString()+"] "+s}function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-async function load(start=1,limit=20){log("계산 요청: "+start+"번부터 "+limit+"개");$("progressText").textContent="전국 지역/키워드 계산 중...";$("bar").style.width="35%";const r=await fetch("/.netlify/functions/generate-bulk?start="+start+"&limit="+limit,{cache:"no-store"}),d=await r.json();if(!d.ok)throw new Error(d.error||"생성기 오류");$("total").textContent=d.total.toLocaleString();$("areas").textContent=d.areaRecords.toLocaleString();$("services").textContent=d.services.toLocaleString();$("range").textContent=d.start.toLocaleString()+"~"+d.end.toLocaleString();$("headline").textContent="현재 규칙 실제 키워드 "+d.total.toLocaleString()+"개 · 8,000개씩 "+Math.ceil(d.total/8000).toLocaleString()+"회";$("bar").style.width="100%";$("progressText").textContent="후보 "+d.start.toLocaleString()+"~"+d.end.toLocaleString()+" 계산 완료";$("samples").innerHTML=d.items.slice(0,40).map(x=>{const href=x.urlPath||("/local/v4/"+x.id+"/");return '<li style="margin:8px 0"><a href="'+href+'" target="_blank" rel="noopener" style="color:#10243a;text-decoration:underline;text-decoration-color:#22b573;text-underline-offset:4px;font-weight:700">'+esc(x.title)+' ↗</a></li>'}).join("");log("완료: 총 "+d.total.toLocaleString()+"개 / 현재 "+d.returned.toLocaleString()+"개");return d}
+const $=id=>document.getElementById(id);
+function log(s){$("log").textContent+="\n["+new Date().toLocaleTimeString()+"] "+s}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function hash(s){let x=2166136261;for(const c of String(s)){x^=c.charCodeAt(0);x=Math.imul(x,16777619)}return x|0}
+function actualPath(x){const id=Math.abs(hash(x.title)).toString(36);return "/local/v4/"+id+"/"}
+
+async function load(start=1,limit=20){
+ log("계산 요청: "+start+"번부터 "+limit+"개");
+ $("progressText").textContent="전국 지역/키워드 계산 중...";
+ $("bar").style.width="35%";
+ const r=await fetch("/.netlify/functions/generate-bulk?start="+start+"&limit="+limit,{cache:"no-store"}),d=await r.json();
+ if(!d.ok)throw new Error(d.error||"생성기 오류");
+ $("total").textContent=d.total.toLocaleString();$("areas").textContent=d.areaRecords.toLocaleString();$("services").textContent=d.services.toLocaleString();
+ $("range").textContent=d.start.toLocaleString()+"~"+d.end.toLocaleString();
+ $("headline").textContent="현재 규칙 실제 키워드 "+d.total.toLocaleString()+"개 · 8,000개씩 "+Math.ceil(d.total/8000).toLocaleString()+"회";
+ $("bar").style.width="100%";$("progressText").textContent="후보 "+d.start.toLocaleString()+"~"+d.end.toLocaleString()+" 계산 완료";
+ $("samples").innerHTML=d.items.slice(0,40).map(x=>'<li style="margin:8px 0"><a href="'+actualPath(x)+'" target="_blank" rel="noopener" style="color:#10243a;text-decoration:underline;text-decoration-color:#22b573;text-underline-offset:4px;font-weight:700">'+esc(x.title)+' ↗</a></li>').join("");
+ log("완료: 총 "+d.total.toLocaleString()+"개 / 현재 "+d.returned.toLocaleString()+"개");
+ return d
+}
 $("calc").onclick=()=>load(1,20).catch(e=>alert(e.message));
 $("preview").onclick=()=>load(+$("start").value||1,Math.min(8000,+$("limit").value||8000)).catch(e=>alert(e.message));
 $("test").onclick=()=>load(1,20).catch(e=>alert(e.message));
