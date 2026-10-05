@@ -34,6 +34,22 @@ async function gh(url,opt,headers,attempt=0){
  throw Error(`GitHub ${r.status}: ${msg}`);
 }
 
+
+function xmlEsc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;")}
+async function makeBlob(api,headers,content){
+ return gh(`${api}/repos/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}/git/blobs`,{method:"POST",body:JSON.stringify({content,encoding:"utf-8"})},headers);
+}
+function sitemapPart(site,items){
+ return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`+
+ items.map(p=>`  <url><loc>${xmlEsc(site+p.urlPath)}</loc></url>`).join("\n")+
+ `\n</urlset>\n`;
+}
+function sitemapIndex(site,parts){
+ return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`+
+ parts.map(n=>`  <sitemap><loc>${xmlEsc(site+"/sitemaps/"+n)}</loc></sitemap>`).join("\n")+
+ `\n</sitemapindex>\n`;
+}
+
 exports.handler=async function(event){
  try{
   let b={};try{b=JSON.parse(event.body||"{}")}catch{}
@@ -57,7 +73,7 @@ exports.handler=async function(event){
   const cm=await gh(`${api}/repos/${owner}/${repo}/git/commits/${parent}`,{},headers);
   const base=cm.tree.sha;
 
-  const tree=new Array(pages.length+1);
+  const tree=new Array(pages.length);
   let cursor=0,done=0;
   const concurrency=Math.max(1,Math.min(3,Number(process.env.GITHUB_BLOB_CONCURRENCY||2)));
 
@@ -76,8 +92,31 @@ exports.handler=async function(event){
 
   await Promise.all(Array.from({length:concurrency},worker));
 
-  const kb=await gh(`${api}/repos/${owner}/${repo}/git/blobs`,{method:"POST",body:JSON.stringify({content:INDEXNOW_KEY,encoding:"utf-8"})},headers);
-  tree[pages.length]={path:`${INDEXNOW_KEY}.txt`,mode:"100644",type:"blob",sha:kb.sha};
+  
+  // 자동 사이트맵: 발행 구간별 sitemap part + sitemap.xml index
+  const currentEnd=start+pages.length-1;
+  const currentName=`v4-${start}-${currentEnd}.xml`;
+  const smBlob=await makeBlob(api,headers,sitemapPart(site,pages));
+  tree.push({path:`sitemaps/${currentName}`,mode:"100644",type:"blob",sha:smBlob.sha});
+
+  // 기존 4호 발행 커밋들을 읽어 sitemap index에 누적
+  let parts=[currentName];
+  try{
+    const cr=await fetch(`${api}/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(branch)}&per_page=100`,{headers});
+    const commits=await cr.json();
+    if(cr.ok&&Array.isArray(commits)){
+      for(const c of commits){
+        const m=String(c.commit?.message||"").match(/4호 대량발행\s+(\d+)-(\d+)/);
+        if(m) parts.push(`v4-${m[1]}-${m[2]}.xml`);
+      }
+    }
+  }catch(e){console.log("SITEMAP_HISTORY_WARN",e.message)}
+  parts=[...new Set(parts)];
+  const indexBlob=await makeBlob(api,headers,sitemapIndex(site,parts));
+  tree.push({path:"sitemap.xml",mode:"100644",type:"blob",sha:indexBlob.sha});
+
+const kb=await gh(`${api}/repos/${owner}/${repo}/git/blobs`,{method:"POST",body:JSON.stringify({content:INDEXNOW_KEY,encoding:"utf-8"})},headers);
+  tree.push({path:`${INDEXNOW_KEY}.txt`,mode:"100644",type:"blob",sha:kb.sha});
 
   const nt=await gh(`${api}/repos/${owner}/${repo}/git/trees`,{method:"POST",body:JSON.stringify({base_tree:base,tree})},headers);
   const nc=await gh(`${api}/repos/${owner}/${repo}/git/commits`,{method:"POST",body:JSON.stringify({message:`4호 대량발행 ${start}-${start+pages.length-1}`,tree:nt.sha,parents:[parent]})},headers);
