@@ -14,3 +14,20 @@ async function loadPublishStatus(){
 $("loadStatus").onclick=()=>loadPublishStatus().catch(e=>alert(e.message));
 $("applyNext").onclick=async()=>{const d=publishState||await loadPublishStatus();$("start").value=d.nextStart;log("다음 시작번호 적용: "+d.nextStart)};
 loadPublishStatus().then(d=>{if(d.last){$("start").value=d.nextStart}}).catch(e=>log("최근 상태 자동확인 실패: "+e.message));
+
+$("test20").onclick=async()=>{
+ try{
+   const r=await fetch("/.netlify/functions/generate-bulk?start=1&limit=20",{cache:"no-store"});
+   const d=await r.json();
+   if(!d.ok)throw new Error(d.error||"테스트 생성 실패");
+   const box=$("preview");
+   box.innerHTML=d.items.map((x,i)=>{
+     const href=x.urlPath||(`/local/v4/${x.id}/`);
+     return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf2ef">
+       <span><b>${i+1}.</b> ${x.title}</span>
+       <a href="${href}" target="_blank" rel="noopener" style="white-space:nowrap;padding:7px 11px;border:1px solid #19a66a;border-radius:9px;color:#087a4d;text-decoration:none;font-weight:800">실제 페이지 열기</a>
+     </div>`;
+   }).join("");
+   log("테스트 20개 + 실제 페이지 링크 생성 완료");
+ }catch(e){log(e.message);alert(e.message)}
+};
