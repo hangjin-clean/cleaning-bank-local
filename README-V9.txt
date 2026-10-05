@@ -1,0 +1,1 @@
+v9: 실제 현재 admin.html 구조(#test, #samples)에 맞춰 테스트 20개 제목 자체를 실제 urlPath 링크로 변경. 다른 파일 수정 없음.

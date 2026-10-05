@@ -1,33 +1,14 @@
-const $=id=>document.getElementById(id);function log(s){$("log").textContent+="\n["+new Date().toLocaleTimeString()+"] "+s}function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}async function load(start=1,limit=20){log("계산 요청: "+start+"번부터 "+limit+"개");$("progressText").textContent="전국 지역/키워드 계산 중...";$("bar").style.width="35%";const r=await fetch("/.netlify/functions/generate-bulk?start="+start+"&limit="+limit,{cache:"no-store"}),d=await r.json();if(!d.ok)throw new Error(d.error||"생성기 오류");$("total").textContent=d.total.toLocaleString();$("areas").textContent=d.areaRecords.toLocaleString();$("services").textContent=d.services.toLocaleString();$("range").textContent=d.start.toLocaleString()+"~"+d.end.toLocaleString();$("headline").textContent="현재 규칙 실제 키워드 "+d.total.toLocaleString()+"개 · 8,000개씩 "+Math.ceil(d.total/8000).toLocaleString()+"회";$("bar").style.width="100%";$("progressText").textContent="후보 "+d.start.toLocaleString()+"~"+d.end.toLocaleString()+" 계산 완료";$("samples").innerHTML=d.items.slice(0,40).map(x=>"<li>"+esc(x.title)+"</li>").join("");log("완료: 총 "+d.total.toLocaleString()+"개 / 현재 "+d.returned.toLocaleString()+"개");return d}$("calc").onclick=()=>load(1,20).catch(e=>alert(e.message));$("preview").onclick=()=>load(+$("start").value||1,Math.min(8000,+$("limit").value||8000)).catch(e=>alert(e.message));$("test").onclick=()=>load(+$("start").value||1,20).catch(e=>alert(e.message));$("next").onclick=()=>{const n=(+$("start").value||1)+8000;$("start").value=n;load(n,Math.min(8000,+$("limit").value||8000)).catch(e=>alert(e.message))};$("prepare").onclick=async()=>{const d=await load(+$("start").value||1,Math.min(8000,+$("limit").value||8000));log("선택 구간 준비 완료: "+d.start+"~"+d.end)};$("reset").onclick=()=>{$("samples").innerHTML="";$("log").textContent="화면 초기화 완료.";$("bar").style.width="0";$("progressText").textContent="대기 중"};
+const $=id=>document.getElementById(id);function log(s){$("log").textContent+="\n["+new Date().toLocaleTimeString()+"] "+s}function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+async function load(start=1,limit=20){log("계산 요청: "+start+"번부터 "+limit+"개");$("progressText").textContent="전국 지역/키워드 계산 중...";$("bar").style.width="35%";const r=await fetch("/.netlify/functions/generate-bulk?start="+start+"&limit="+limit,{cache:"no-store"}),d=await r.json();if(!d.ok)throw new Error(d.error||"생성기 오류");$("total").textContent=d.total.toLocaleString();$("areas").textContent=d.areaRecords.toLocaleString();$("services").textContent=d.services.toLocaleString();$("range").textContent=d.start.toLocaleString()+"~"+d.end.toLocaleString();$("headline").textContent="현재 규칙 실제 키워드 "+d.total.toLocaleString()+"개 · 8,000개씩 "+Math.ceil(d.total/8000).toLocaleString()+"회";$("bar").style.width="100%";$("progressText").textContent="후보 "+d.start.toLocaleString()+"~"+d.end.toLocaleString()+" 계산 완료";$("samples").innerHTML=d.items.slice(0,40).map(x=>{const href=x.urlPath||("/local/v4/"+x.id+"/");return '<li style="margin:8px 0"><a href="'+href+'" target="_blank" rel="noopener" style="color:#10243a;text-decoration:underline;text-decoration-color:#22b573;text-underline-offset:4px;font-weight:700">'+esc(x.title)+' ↗</a></li>'}).join("");log("완료: 총 "+d.total.toLocaleString()+"개 / 현재 "+d.returned.toLocaleString()+"개");return d}
+$("calc").onclick=()=>load(1,20).catch(e=>alert(e.message));
+$("preview").onclick=()=>load(+$("start").value||1,Math.min(8000,+$("limit").value||8000)).catch(e=>alert(e.message));
+$("test").onclick=()=>load(1,20).catch(e=>alert(e.message));
+$("next").onclick=()=>{const n=(+$("start").value||1)+8000;$("start").value=n;load(n,Math.min(8000,+$("limit").value||8000)).catch(e=>alert(e.message))};
+$("prepare").onclick=async()=>{const d=await load(+$("start").value||1,Math.min(8000,+$("limit").value||8000));log("선택 구간 준비 완료: "+d.start+"~"+d.end)};
+$("reset").onclick=()=>{$("samples").innerHTML="";$("log").textContent="화면 초기화 완료.";$("bar").style.width="0";$("progressText").textContent="대기 중"};
 $("publish").onclick=async()=>{if(!confirm("선택한 구간을 실제 GitHub에 발행하고 IndexNow까지 등록할까요?"))return;const start=+$("start").value||1,limit=Math.min(8000,+$("limit").value||8000);log("실제 발행 시작 요청: "+start+" / "+limit+"개");const r=await fetch("/.netlify/functions/publish-bulk-background",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({start,limit})});if(r.ok){log("백그라운드 발행 요청 완료. GitHub/Netlify에서 배포가 진행됩니다.");alert("발행 요청 완료. 잠시 후 Netlify 배포를 확인하세요.")}else{log("발행 요청 실패 HTTP "+r.status);alert("발행 요청 실패: "+r.status)}};
-
 let publishState=null;
-async function loadPublishStatus(){
- const r=await fetch("/.netlify/functions/publish-status",{cache:"no-store"}),d=await r.json();
- if(!d.ok)throw new Error(d.error||"상태 확인 실패");
- publishState=d;
- $("lastDone").textContent=d.last?`${d.last.start.toLocaleString()}~${d.last.end.toLocaleString()}`:"없음";
- $("nextStart").textContent=d.nextStart.toLocaleString();
- if(d.last) log(`최근 완료 ${d.last.start}~${d.last.end} / 다음 시작 ${d.nextStart}`);
- return d;
-}
+async function loadPublishStatus(){const r=await fetch("/.netlify/functions/publish-status",{cache:"no-store"}),d=await r.json();if(!d.ok)throw new Error(d.error||"상태 확인 실패");publishState=d;$("lastDone").textContent=d.last?`${d.last.start.toLocaleString()}~${d.last.end.toLocaleString()}`:"없음";$("nextStart").textContent=d.nextStart.toLocaleString();if(d.last)log(`최근 완료 ${d.last.start}~${d.last.end} / 다음 시작 ${d.nextStart}`);return d}
 $("loadStatus").onclick=()=>loadPublishStatus().catch(e=>alert(e.message));
 $("applyNext").onclick=async()=>{const d=publishState||await loadPublishStatus();$("start").value=d.nextStart;log("다음 시작번호 적용: "+d.nextStart)};
 loadPublishStatus().then(d=>{if(d.last){$("start").value=d.nextStart}}).catch(e=>log("최근 상태 자동확인 실패: "+e.message));
-
-$("test20").onclick=async()=>{
- try{
-   const r=await fetch("/.netlify/functions/generate-bulk?start=1&limit=20",{cache:"no-store"});
-   const d=await r.json();
-   if(!d.ok)throw new Error(d.error||"테스트 생성 실패");
-   const box=$("preview");
-   box.innerHTML=d.items.map((x,i)=>{
-     const href=x.urlPath||(`/local/v4/${x.id}/`);
-     return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #edf2ef">
-       <span><b>${i+1}.</b> ${x.title}</span>
-       <a href="${href}" target="_blank" rel="noopener" style="white-space:nowrap;padding:7px 11px;border:1px solid #19a66a;border-radius:9px;color:#087a4d;text-decoration:none;font-weight:800">실제 페이지 열기</a>
-     </div>`;
-   }).join("");
-   log("테스트 20개 + 실제 페이지 링크 생성 완료");
- }catch(e){log(e.message);alert(e.message)}
-};
