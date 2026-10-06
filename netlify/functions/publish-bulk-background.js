@@ -89,33 +89,34 @@ exports.handler=async function(event){
   const cm=await gh(`${api}/repos/${owner}/${repo}/git/commits/${parent}`,{},headers);
   const base=cm.tree.sha;
 
-  const tree=new Array(pages.length);
-  let cursor=0,done=0;
-  const concurrency=Math.max(1,Math.min(3,Number(process.env.GITHUB_BLOB_CONCURRENCY||2)));
+  // v18: 8,000개 최적화
+  // 페이지마다 Blob API를 호출하지 않고 Git Tree API content로 100페이지씩 묶어 저장.
+  const chunkSize=Math.max(25,Math.min(150,Number(process.env.GITHUB_TREE_CHUNK||100)));
+  let workingTree=base;
+  let done=0;
 
-  async function worker(){
-    while(true){
-      const i=cursor++;
-      if(i>=pages.length)return;
-      const p=pages[i];
-      const bl=await gh(`${api}/repos/${owner}/${repo}/git/blobs`,{method:"POST",body:JSON.stringify({content:pageHtml(p,site),encoding:"utf-8"})},headers);
-      tree[i]={path:`local/v4/${p.id}/index.html`,mode:"100644",type:"blob",sha:bl.sha};
-      done++;
-      if(done%100===0)console.log("4HO_PROGRESS",done,"/",pages.length);
-      await sleep(180);
-    }
+  for(let i=0;i<pages.length;i+=chunkSize){
+    const batch=pages.slice(i,i+chunkSize);
+    const entries=batch.map(p=>({
+      path:`local/v4/${p.id}/index.html`,
+      mode:"100644",
+      type:"blob",
+      content:pageHtml(p,site)
+    }));
+    const bt=await gh(`${api}/repos/${owner}/${repo}/git/trees`,{
+      method:"POST",
+      body:JSON.stringify({base_tree:workingTree,tree:entries})
+    },headers);
+    workingTree=bt.sha;
+    done+=batch.length;
+    console.log("4HO_PROGRESS",done,"/",pages.length);
+    await sleep(700);
   }
 
-  await Promise.all(Array.from({length:concurrency},worker));
-
-  
   // 자동 사이트맵: 발행 구간별 sitemap part + sitemap.xml index
   const currentEnd=start+pages.length-1;
   const currentName=`v4-${start}-${currentEnd}.xml`;
-  const smBlob=await makeBlob(api,headers,sitemapPart(site,pages));
-  tree.push({path:`sitemaps/${currentName}`,mode:"100644",type:"blob",sha:smBlob.sha});
-
-  // 기존 4호 발행 커밋들을 읽어 sitemap index에 누적
+// 기존 4호 발행 커밋들을 읽어 sitemap index에 누적
   let parts=[currentName];
   try{
     const cr=await fetch(`${api}/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(branch)}&per_page=100`,{headers});
@@ -128,14 +129,18 @@ exports.handler=async function(event){
     }
   }catch(e){console.log("SITEMAP_HISTORY_WARN",e.message)}
   parts=[...new Set(parts)];
-  const indexBlob=await makeBlob(api,headers,sitemapIndex(site,parts));
-  tree.push({path:"sitemap.xml",mode:"100644",type:"blob",sha:indexBlob.sha});
+  const finalEntries=[
+    {path:`sitemaps/${currentName}`,mode:"100644",type:"blob",content:sitemapPart(site,pages)},
+    {path:"sitemap.xml",mode:"100644",type:"blob",content:sitemapIndex(site,parts)},
+    {path:`${INDEXNOW_KEY}.txt`,mode:"100644",type:"blob",content:INDEXNOW_KEY}
+  ];
+  const finalTree=await gh(`${api}/repos/${owner}/${repo}/git/trees`,{
+    method:"POST",
+    body:JSON.stringify({base_tree:workingTree,tree:finalEntries})
+  },headers);
 
-const kb=await gh(`${api}/repos/${owner}/${repo}/git/blobs`,{method:"POST",body:JSON.stringify({content:INDEXNOW_KEY,encoding:"utf-8"})},headers);
-  tree.push({path:`${INDEXNOW_KEY}.txt`,mode:"100644",type:"blob",sha:kb.sha});
-
-  const nt=await gh(`${api}/repos/${owner}/${repo}/git/trees`,{method:"POST",body:JSON.stringify({base_tree:base,tree})},headers);
-  const nc=await gh(`${api}/repos/${owner}/${repo}/git/commits`,{method:"POST",body:JSON.stringify({message:`4호 대량발행 ${start}-${start+pages.length-1}`,tree:nt.sha,parents:[parent]})},headers);
+  // 모든 페이지를 모은 뒤 GitHub 커밋은 1회.
+  const nc=await gh(`${api}/repos/${owner}/${repo}/git/commits`,{method:"POST",body:JSON.stringify({message:`4호 대량발행 ${start}-${start+pages.length-1}`,tree:finalTree.sha,parents:[parent]})},headers);
   await gh(`${api}/repos/${owner}/${repo}/git/refs/heads/${branch}`,{method:"PATCH",body:JSON.stringify({sha:nc.sha,force:false})},headers);
 
   let deployed=false;
