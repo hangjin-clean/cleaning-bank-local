@@ -117,15 +117,18 @@ exports.handler=async function(event){
   const currentEnd=start+pages.length-1;
   const currentName=`v4-${start}-${currentEnd}.xml`;
 // 기존 4호 발행 커밋들을 읽어 sitemap index에 누적
+  // v20: 현재 v19/v20에서 다시 발행한 Sitemap만 index에 누적.
+  // 과거 잘못된 지역명으로 생성된 v18 Sitemap을 커밋 이력에서 되살리지 않는다.
   let parts=[currentName];
   try{
-    const cr=await fetch(`${api}/repos/${owner}/${repo}/commits?sha=${encodeURIComponent(branch)}&per_page=100`,{headers});
-    const commits=await cr.json();
-    if(cr.ok&&Array.isArray(commits)){
-      for(const c of commits){
-        const m=String(c.commit?.message||"").match(/4호 대량발행\s+(\d+)-(\d+)/);
-        if(m) parts.push(`v4-${m[1]}-${m[2]}.xml`);
-      }
+    const tr=await gh(`${api}/repos/${owner}/${repo}/git/trees/${base}?recursive=1`,{},headers);
+    const names=(tr.tree||[]).map(x=>x.path).filter(p=>/^sitemaps\/v4-\d+-\d+\.xml$/.test(p));
+    // 현재 재발행 기준: 3~8002 이후의 연속 8,000개 구간과 단일 검증 8452는 제외.
+    for(const p of names){
+      const m=p.match(/^sitemaps\/v4-(\d+)-(\d+)\.xml$/); if(!m)continue;
+      const a=+m[1],z=+m[2];
+      if(a===8452&&z===8452)continue;
+      if(a>=3 && ((z-a+1)===8000)) parts.push(p.replace(/^sitemaps\//,""));
     }
   }catch(e){console.log("SITEMAP_HISTORY_WARN",e.message)}
   parts=[...new Set(parts)];
