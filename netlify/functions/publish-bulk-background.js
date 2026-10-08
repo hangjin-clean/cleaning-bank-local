@@ -69,10 +69,11 @@ function sitemapIndex(site,parts){
 exports.handler=async function(event){
  try{
   let b={};try{b=JSON.parse(event.body||"{}")}catch{}
-  const start=Math.max(1,+b.start||1),limit=Math.min(8000,Math.max(1,+b.limit||8000));
+  const start=Math.max(1,+b.start||1),limit=Math.min(1000,Math.max(1,+b.limit||1000));
   const site=(process.env.SITE_URL||"").replace(/\/$/,""),token=process.env.GITHUB_TOKEN,owner=process.env.GITHUB_OWNER,repo=process.env.GITHUB_REPO,branch=process.env.GITHUB_BRANCH||"main";
   if(!site||!token||!owner||!repo)throw Error("환경변수 누락");
 
+  console.log("4HO_CHUNK_START",start,limit);
   const gr=await fetch(`${site}/.netlify/functions/generate-bulk?start=${start}&limit=${limit}`,{cache:"no-store"}),gd=await gr.json();
   if(!gd.ok||!gd.items?.length)throw Error(gd.error||"키워드 생성 실패");
 
@@ -128,7 +129,7 @@ exports.handler=async function(event){
       const m=p.match(/^sitemaps\/v4-(\d+)-(\d+)\.xml$/); if(!m)continue;
       const a=+m[1],z=+m[2];
       if(a===8452&&z===8452)continue;
-      if(a>=3 && ((z-a+1)===8000)) parts.push(p.replace(/^sitemaps\//,""));
+      if(a>=3 && ((z-a+1)===8000 || (z-a+1)<=1000)) parts.push(p.replace(/^sitemaps\//,""));
     }
   }catch(e){console.log("SITEMAP_HISTORY_WARN",e.message)}
   parts=[...new Set(parts)];
@@ -147,7 +148,7 @@ exports.handler=async function(event){
   await gh(`${api}/repos/${owner}/${repo}/git/refs/heads/${branch}`,{method:"PATCH",body:JSON.stringify({sha:nc.sha,force:false})},headers);
 
   let deployed=false;
-  for(let i=0;i<60;i++){
+  for(let i=0;i<12;i++){
     await sleep(5000);
     try{const r=await fetch(site+pages[0].urlPath,{cache:"no-store"});if(r.ok){deployed=true;break}}catch{}
   }
@@ -166,5 +167,5 @@ exports.handler=async function(event){
   }
 
   console.log("4HO_PUBLISH_DONE",JSON.stringify({start,count:pages.length,end:start+pages.length-1,commit:nc.sha,deployed,indexNowStatus:ix}));
- }catch(e){console.error("4HO_PUBLISH_ERROR",e)}
+ }catch(e){console.error("4HO_PUBLISH_ERROR",e && (e.stack||e.message)||String(e))}
 };
