@@ -21,20 +21,20 @@ async function loadPublishStatus(){const r=await fetch("/.netlify/functions/publ
 function setPublishUI(text,pct){$("progressText").textContent=text;$("bar").style.width=pct+"%"}
 async function waitForChunk(start,end){
  const begun=Date.now();let checks=0;
- while(Date.now()-begun<15*60*1000){
+ while(Date.now()-begun<4*60*1000){
   await new Promise(r=>setTimeout(r,5000));checks++;
   try{
    const d=await loadPublishStatus();
    if(d.last && d.last.start===start && d.last.end===end)return d.last;
   }catch(e){log("상태 확인 재시도: "+e.message)}
  }
- throw new Error(start+"~"+end+" 구간 커밋을 15분 내 확인하지 못했습니다. 재발행 전 GitHub 기록을 확인하세요.");
+ throw new Error(start+"~"+end+" 구간 커밋을 4분 내 확인하지 못했습니다. 재발행 전 GitHub 기록을 확인하세요.");
 }
 let publishing=false;
 $("publish").onclick=async()=>{
  if(publishing)return;
  const start=+$("start").value||1,limit=Math.min(8000,+$("limit").value||8000),end=start+limit-1;
- if(!confirm(start+"~"+end+" 구간을 최대 1,000개씩 순차 발행할까요?"))return;
+ if(!confirm(start+"~"+end+" 구간을 최대 500개씩 순차 발행할까요?"))return;
  publishing=true;$("publish").disabled=true;$("publish").textContent="발행 처리 중...";
  try{
   // Resume only at the confirmed next commit. Never overwrite a completed range.
@@ -49,7 +49,7 @@ $("publish").onclick=async()=>{
    throw new Error("이미 완료된 구간입니다. GitHub 최근 발행 기록을 확인하세요.");
   }
   while(cursor<=end){
-   const count=Math.min(1000,end-cursor+1),chunkEnd=cursor+count-1;
+   const count=Math.min(500,end-cursor+1),chunkEnd=cursor+count-1;
    const progress=Math.round((cursor-start)/limit*100);
    setPublishUI("⏳ "+cursor+"~"+chunkEnd+" 발행 요청 중",progress);
    log("분할 발행 요청: "+cursor+"~"+chunkEnd);
@@ -60,6 +60,7 @@ $("publish").onclick=async()=>{
    const commit=await waitForChunk(cursor,chunkEnd);
    log("✅ GitHub 커밋 확인 "+cursor+"~"+chunkEnd+" / "+String(commit.sha).slice(0,7));
    cursor=chunkEnd+1;
+   if(cursor<=end)await new Promise(r=>setTimeout(r,8000));
    setPublishUI("GitHub 커밋 완료 "+(cursor-1)+" / "+end,Math.round((cursor-start)/limit*100));
   }
   setPublishUI("✅ GitHub 발행 커밋 완료 "+start+"~"+end,100);

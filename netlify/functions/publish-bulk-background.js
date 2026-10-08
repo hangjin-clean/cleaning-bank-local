@@ -35,21 +35,30 @@ function pageHtml(p,site){
 <div class="cta"><h2>청소 상담이 필요하신가요?</h2><p>${r} ${s} 무료 방문견적과 관리주기를 상담하세요.</p><div class="cta-actions"><a class="btn call" href="tel:01068560158"><strong>☎ 010-6856-0158</strong><span>지금 바로 전화 상담하기 ›</span></a><a class="btn home" href="https://cleaning-bank.imweb.me/" target="_blank" rel="noopener"><strong>⌂ 청소뱅크 홈페이지</strong><span>무료 견적 신청 바로가기 ›</span></a></div></div></main></body></html>`;
 }
 async function gh(url,opt,headers,attempt=0){
- const r=await fetch(url,{...opt,headers:opt.headers||headers});
- const tx=await r.text(); let d={}; try{d=JSON.parse(tx)}catch{d={message:tx}}
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),25000);
+ let r,tx,d={};
+ try{
+   r=await fetch(url,{...opt,headers:opt.headers||headers,signal:controller.signal});
+   tx=await r.text();
+ }catch(e){
+   if(attempt<2){await sleep(2000*(attempt+1));return gh(url,opt,headers,attempt+1)}
+   throw Error(`GitHub network failure after retries: ${e.message}`);
+ }finally{clearTimeout(timer)}
+ try{d=JSON.parse(tx)}catch{d={message:tx}}
  if(r.ok)return d;
  const msg=String(d.message||tx||"");
- const retryable=r.status===403||r.status===429||r.status>=500;
- if(retryable && attempt<8){
+ const retryable=r.status===429||r.status>=500||
+  (r.status===403 && /rate limit|secondary|abuse/i.test(msg));
+ if(retryable && attempt<3){
    const ra=Number(r.headers.get("retry-after")||0);
-   const wait=ra?ra*1000:Math.min(120000,5000*Math.pow(2,attempt));
+   const wait=ra?Math.min(30000,ra*1000):Math.min(12000,3000*Math.pow(2,attempt));
    console.log("GH_RETRY",r.status,"attempt",attempt+1,"wait",wait,msg.slice(0,160));
    await sleep(wait);
    return gh(url,opt,headers,attempt+1);
  }
- throw Error(`GitHub ${r.status}: ${msg}`);
+ throw Error(`GitHub ${r.status} after ${attempt+1} attempt(s): ${msg}`);
 }
-
 
 function xmlEsc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;")}
 async function makeBlob(api,headers,content){
@@ -69,7 +78,7 @@ function sitemapIndex(site,parts){
 exports.handler=async function(event){
  try{
   let b={};try{b=JSON.parse(event.body||"{}")}catch{}
-  const start=Math.max(1,+b.start||1),limit=Math.min(1000,Math.max(1,+b.limit||1000));
+  const start=Math.max(1,+b.start||1),limit=Math.min(500,Math.max(1,+b.limit||500));
   const site=(process.env.SITE_URL||"").replace(/\/$/,""),token=process.env.GITHUB_TOKEN,owner=process.env.GITHUB_OWNER,repo=process.env.GITHUB_REPO,branch=process.env.GITHUB_BRANCH||"main";
   if(!site||!token||!owner||!repo)throw Error("환경변수 누락");
 
