@@ -22,3 +22,12 @@
 .region-bottom-call a{display:inline-flex;margin-top:15px;background:#168e70;color:#fff;padding:16px 28px;border-radius:999px;font-size:24px;font-weight:900}
 .region-phone-float{position:fixed;right:22px;bottom:22px;z-index:999;background:#168e70;color:#fff;padding:14px 20px;border-radius:999px;font-size:18px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 @media(max-width:760px){.region-gallery{grid-template-columns:1fr 1fr}.region-cert{grid-template-columns:1fr}.region-trust{grid-template-columns:1fr}.region-top-phone{font-size:16px}.region-bottom-call a{font-size:20px}.region-phone-float{right:12px;bottom:12px;font-size:16px}}
+
+
+/* 4호 상담 하단 고정 메뉴 및 검색 친화적 상세 안내 */
+.sticky-cta{position:fixed;bottom:0;left:0;right:0;z-index:1100;background:rgba(255,255,255,.97);border-top:1px solid #dbe9e2;padding:11px 14px calc(11px + env(safe-area-inset-bottom));box-shadow:0 -6px 25px rgba(0,0,0,.08)}
+.sticky-cta-inner{max-width:920px;margin:auto;display:flex;justify-content:center;gap:12px}
+.sticky-cta a{flex:1;max-width:290px;min-height:49px;display:flex;align-items:center;justify-content:center;border-radius:999px;color:#fff;text-decoration:none;font-size:15px;font-weight:800;text-align:center}
+.sticky-home{background:#137950}.sticky-quote{background:#2676d9}.sticky-call{background:#e66a2b}
+body{padding-bottom:92px}.seo-guide{margin:55px 0 28px}.seo-guide h2{margin:30px 0 12px}.seo-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.seo-guide-grid>div{background:#f5f8f7;border:1px solid #e0eae6;border-radius:14px;padding:18px}.seo-guide-grid h3{font-size:18px;margin:0 0 8px}.seo-guide-grid p{margin:0}.seo-guide details{padding:13px 0;border-bottom:1px solid #dbe4e0}.seo-guide summary{font-weight:800;cursor:pointer}.seo-guide a{text-decoration:underline;color:#137950}
+@media(max-width:650px){.sticky-cta{padding:9px 8px calc(9px + env(safe-area-inset-bottom))}.sticky-cta-inner{gap:6px}.sticky-cta a{font-size:12px;min-height:46px;padding:6px 2px}.seo-guide-grid{grid-template-columns:1fr}body{padding-bottom:84px}}
